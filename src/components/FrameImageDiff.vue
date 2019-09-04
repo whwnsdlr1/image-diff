@@ -1,0 +1,151 @@
+<template>
+  <div class="body"
+    @mousedown="listen__x__onmousedown"
+    @mouseenter="() => { if (frameData != undefined) { $emit('vue-mouseenter', {}) }}"
+    @mouseleave="() => { if (frameData != undefined) { $emit('vue-mouseleave', {}) }}"
+    @wheel="listen__x__onwheel">
+    <div v-if='frameData != undefined && frameMouseOn == true' class="overlay">
+      <span class="name">{{ frameData.name }}</span>
+      <div v-for="(value, key, index) in frameData.params" :key="`params-${index}`"
+        class="params"
+        :style="{'margin-top': '0px', 'padding': '0px'}">
+        <span>{{ key }}: {{ value }}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+/* eslint-disable no-console */
+import elementResizeEvent from 'element-resize-event'
+
+export default {
+  props: ['frame-data', 'pan-x', 'frame-pan-coord', 'frame-zoom', 'frame-mouse-on'],
+  methods: {
+    listen__x__onresize: function () {
+      this.$cornerstone.resize(this.$el, false)
+      /*
+      let viewport = this.$cornerstone.getViewport(elFrame1)
+      viewport.translation.x = activeItem.state.translationX
+      viewport.translation.y = activeItem.state.translationY
+      viewport.scale = activeItem.state.scale
+      this.$cornerstone.setViewport(elFrame1, viewport)
+      */
+    },
+    listen__x__onmousedown: function (e) {
+      if (this.frameData == undefined) return
+      const Vue = this
+      function mouseMoveHandler (e) {
+        const deltaX = e.pageX - lastX
+        const deltaY = e.pageY - lastY
+        lastX = e.pageX
+        lastY = e.pageY
+
+        const viewport = Vue.$cornerstone.getViewport(Vue.$el)
+        const x = viewport.translation.x + (deltaX / viewport.scale)
+        const y = viewport.translation.y + (deltaY / viewport.scale)
+        Vue.$emit('vue-mousemove', {x, y})
+      }
+
+      function mouseUpHandler () {
+        Vue.$el.removeEventListener('mousemove', mouseMoveHandler)
+        Vue.$el.removeEventListener('mouseup', mouseUpHandler)
+        // Vue.$el.removeEventListener('mouseleave', mouseUpHandler)
+      }
+      let lastX, lastY
+      if (e.which === 1) {
+        lastX = e.pageX
+        lastY = e.pageY
+        Vue.$el.addEventListener('mousemove', mouseMoveHandler)
+        Vue.$el.addEventListener('mouseup', mouseUpHandler)
+        // Vue.$el.addEventListener('mouseleave', mouseUpHandler)
+      }
+    },
+    listen__x__onwheel: function (e) {
+      if (this.frameData == undefined) return
+      
+      const Vue = this
+      const viewport = Vue.$cornerstone.getViewport(Vue.$el)
+      const as = e.wheelDelta < 0 || e.detail > 0 ? -0.10 : 0.10
+      const scale = viewport.scale + as
+      if (scale > 0) Vue.$emit('vue-wheel', {scale})
+      return false
+    }
+  },
+  mounted () {
+    if (this.frameData !== undefined) {
+      elementResizeEvent(this.$el, this._.debounce(this.listen__x__onresize, 10))
+
+      this.$cornerstone.enable(this.$el)
+      const image = this.frameData.cornerstonImage
+      let defViewport = this.$cornerstone.getDefaultViewport(this.$el, image)
+      const style = getComputedStyle(this.$el)
+      const thumbnailHeight = parseInt(style.height, 10)
+      const thumbnailWidth = parseInt(style.width, 10)
+      const scaleY = thumbnailHeight / image.height
+      const scaleX = thumbnailWidth / image.width
+      const scale = (scaleY < scaleX)? scaleY : scaleX
+      defViewport.scale = scale
+      defViewport.translation.y = 0
+      defViewport.translation.x = 0
+      
+      this.$cornerstone.displayImage(this.$el, this.frameData.cornerstonImage, defViewport)
+    }
+  },
+  watch: {
+    framePanCoord: function (framePanCoord) {
+      if (this.frameData != undefined && framePanCoord != undefined) {
+        let viewport = this.$cornerstone.getViewport(this.$el)
+        viewport.translation.x = framePanCoord.x
+        viewport.translation.y = framePanCoord.y
+        this.$cornerstone.setViewport(this.$el, viewport)
+      }
+    },
+    frameZoom: function(frameZoom) {
+      if (this.frameData != undefined && frameZoom != undefined) {
+        let viewport = this.$cornerstone.getViewport(this.$el)
+        viewport.scale = frameZoom
+        this.$cornerstone.setViewport(this.$el, viewport)
+      }
+    }
+  },
+  beforeDestroy () {
+    elementResizeEvent.unbind(this.$el)
+    this.$cornerstone.disable(this.$el)
+  }
+}
+</script>
+
+<style scoped>
+.body {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
+}
+.overlay {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.65);
+  padding: 1px 7px;
+  pointer-events: none;
+}
+.overlay span.name {
+  font-size: 14px;
+  font-weight: bold;
+}
+.overlay .params {
+  font-size: 12px;
+}
+</style>
