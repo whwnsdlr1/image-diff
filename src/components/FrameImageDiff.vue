@@ -1,9 +1,7 @@
 <template>
   <div class="body"
-    @mousedown="listen__x__onmousedown"
     @mouseenter="() => { if (frameData != undefined) { $emit('vue-mouseenter', {}) }}"
-    @mouseleave="() => { if (frameData != undefined) { $emit('vue-mouseleave', {}) }}"
-    @wheel="listen__x__onwheel">
+    @mouseleave="() => { if (frameData != undefined) { $emit('vue-mouseleave', {}) }}">
     <div v-if='frameData != undefined && frameMouseOn == true' class="overlay">
       <span class="name">{{ frameData.name }}</span>
       <div v-for="(value, key, index) in frameData.params" :key="`params-${index}`"
@@ -24,53 +22,7 @@ export default {
   methods: {
     listen__x__onresize: function () {
       this.$cornerstone.resize(this.$el, false)
-      /*
-      let viewport = this.$cornerstone.getViewport(elFrame1)
-      viewport.translation.x = activeItem.state.translationX
-      viewport.translation.y = activeItem.state.translationY
-      viewport.scale = activeItem.state.scale
-      this.$cornerstone.setViewport(elFrame1, viewport)
-      */
     },
-    listen__x__onmousedown: function (e) {
-      if (this.frameData == undefined) return
-      const Vue = this
-      function mouseMoveHandler (e) {
-        const deltaX = e.pageX - lastX
-        const deltaY = e.pageY - lastY
-        lastX = e.pageX
-        lastY = e.pageY
-
-        const viewport = Vue.$cornerstone.getViewport(Vue.$el)
-        const x = viewport.translation.x + (deltaX / viewport.scale)
-        const y = viewport.translation.y + (deltaY / viewport.scale)
-        Vue.$emit('vue-mousemove', {x, y})
-      }
-
-      function mouseUpHandler () {
-        Vue.$el.removeEventListener('mousemove', mouseMoveHandler)
-        Vue.$el.removeEventListener('mouseup', mouseUpHandler)
-        // Vue.$el.removeEventListener('mouseleave', mouseUpHandler)
-      }
-      let lastX, lastY
-      if (e.which === 1) {
-        lastX = e.pageX
-        lastY = e.pageY
-        Vue.$el.addEventListener('mousemove', mouseMoveHandler)
-        Vue.$el.addEventListener('mouseup', mouseUpHandler)
-        // Vue.$el.addEventListener('mouseleave', mouseUpHandler)
-      }
-    },
-    listen__x__onwheel: function (e) {
-      if (this.frameData == undefined) return
-      
-      const Vue = this
-      const viewport = Vue.$cornerstone.getViewport(Vue.$el)
-      const as = e.wheelDelta < 0 || e.detail > 0 ? -0.10 : 0.10
-      const scale = viewport.scale + as
-      if (scale > 0) Vue.$emit('vue-wheel', {scale})
-      return false
-    }
   },
   mounted () {
     if (this.frameData !== undefined) {
@@ -79,6 +31,7 @@ export default {
       this.$cornerstone.enable(this.$el)
       const image = this.frameData.cornerstonImage
       let defViewport = this.$cornerstone.getDefaultViewport(this.$el, image)
+
       const style = getComputedStyle(this.$el)
       const thumbnailHeight = parseInt(style.height, 10)
       const thumbnailWidth = parseInt(style.width, 10)
@@ -88,7 +41,7 @@ export default {
       defViewport.scale = scale
       defViewport.translation.y = 0
       defViewport.translation.x = 0
-      
+      this.$emit('vue-mounted', {scale, x: defViewport.translation.x, y: defViewport.translation.y})
       this.$cornerstone.displayImage(this.$el, this.frameData.cornerstonImage, defViewport)
     }
   },

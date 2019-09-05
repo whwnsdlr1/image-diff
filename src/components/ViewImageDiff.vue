@@ -3,7 +3,10 @@
   <div class="wait-input" v-if="phase == 'wait-input'">
     <input ref="input-file" type="file" multiple accept=".jpg,.png" @change="listen__x__onchange" />
   </div>
-  <div class="opened" v-if="phase == 'opened'">
+  <div class="opened" v-if="phase == 'opened'"
+    ref="div_opened"
+    @mousedown=listen__div_opened__onmousedown
+    @wheel="listen__div_opened__onwheel">
     <div class="row-frame" v-for="(frames_, row) in frames" :key="`row-${row}`">
       <div class="col-frame" v-for="(frame, col) in frames_" :key="`col-${col}`">
         <frame-image-diff
@@ -11,10 +14,9 @@
           :frame-pan-coord="framePanCoord"
           :frame-zoom="frameZoom"
           :frame-mouse-on="frameMouseOn"
-          @vue-mousemove="(param) => framePanCoord = param"
+          @vue-mounted="(params) => { frameZoom = params.scale; framePanCoord = {x: params.x, y: params.y}}"
           @vue-mouseenter="frameMouseOn = true"
-          @vue-mouseleave="frameMouseOn = false"
-          @vue-wheel="(param) => frameZoom = param.scale" />
+          @vue-mouseleave="frameMouseOn = false" />
       </div>
     </div>
   </div>
@@ -113,6 +115,44 @@ export default {
     },
     listen__frame__onmousemove: function (param) {
       this.framePanCoord = param
+    },
+    listen__div_opened__onmousedown: function (e) {
+      const Vue = this
+      if (Vue.framePanCoord == undefined) return
+      
+      function mouseMoveHandler (e) {
+        const deltaX = e.pageX - lastX
+        const deltaY = e.pageY - lastY
+        lastX = e.pageX
+        lastY = e.pageY
+
+        const x = Vue.framePanCoord.x + (deltaX / Vue.frameZoom)
+        const y = Vue.framePanCoord.y + (deltaY / Vue.frameZoom)
+        Vue.framePanCoord = {x, y}
+      }
+
+      function mouseUpHandler () {
+        Vue.$el.removeEventListener('mousemove', mouseMoveHandler)
+        Vue.$el.removeEventListener('mouseup', mouseUpHandler)
+        // Vue.$el.removeEventListener('mouseleave', mouseUpHandler)
+      }
+      let lastX, lastY
+      if (e.which === 1) {
+        lastX = e.pageX
+        lastY = e.pageY
+        Vue.$el.addEventListener('mousemove', mouseMoveHandler)
+        Vue.$el.addEventListener('mouseup', mouseUpHandler)
+        // Vue.$el.addEventListener('mouseleave', mouseUpHandler)
+      }
+    },
+    listen__div_opened__onwheel: function (e) {      
+      const Vue = this
+      if (Vue.frameZoom == undefined) return
+
+      const as = e.wheelDelta < 0 || e.detail > 0 ? -0.10 : 0.10
+      const scale = Vue.frameZoom + as
+      if (scale > 0) Vue.frameZoom = scale
+      return false
     },
     parseName: function(str) {
       const ext = path.extname(str)
