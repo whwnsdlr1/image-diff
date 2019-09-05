@@ -5,7 +5,8 @@
   </div>
   <div class="opened" v-if="phase == 'opened'"
     ref="div_opened"
-    @mousedown=listen__div_opened__onmousedown
+    @touchstart="listen__div_opened__on_x_down($event, 'touch')"
+    @mousedown="listen__div_opened__on_x_down($event, 'mouse')"
     @wheel="listen__div_opened__onwheel">
     <div class="row-frame" v-for="(frames_, row) in frames" :key="`row-${row}`">
       <div class="col-frame" v-for="(frame, col) in frames_" :key="`col-${col}`">
@@ -116,10 +117,13 @@ export default {
     listen__frame__onmousemove: function (param) {
       this.framePanCoord = param
     },
-    listen__div_opened__onmousedown: function (e) {
+    listen__div_opened__on_x_down: function (e, type) {
       const Vue = this
       if (Vue.framePanCoord == undefined) return
       
+      const eventNameMove = type == 'mouse'? 'mousemove' : 'touchmove'
+      const eventNameUp = type == 'mouse'? 'mouseup' : 'touchend'
+
       function mouseMoveHandler (e) {
         const deltaX = e.pageX - lastX
         const deltaY = e.pageY - lastY
@@ -132,17 +136,15 @@ export default {
       }
 
       function mouseUpHandler () {
-        Vue.$el.removeEventListener('mousemove', mouseMoveHandler)
-        Vue.$el.removeEventListener('mouseup', mouseUpHandler)
-        // Vue.$el.removeEventListener('mouseleave', mouseUpHandler)
+        Vue.$el.removeEventListener(eventNameMove, mouseMoveHandler)
+        Vue.$el.removeEventListener(eventNameUp, mouseUpHandler)
       }
       let lastX, lastY
       if (e.which === 1) {
         lastX = e.pageX
         lastY = e.pageY
-        Vue.$el.addEventListener('mousemove', mouseMoveHandler)
-        Vue.$el.addEventListener('mouseup', mouseUpHandler)
-        // Vue.$el.addEventListener('mouseleave', mouseUpHandler)
+        Vue.$el.addEventListener(eventNameMove, mouseMoveHandler)
+        Vue.$el.addEventListener(eventNameUp, mouseUpHandler)
       }
     },
     listen__div_opened__onwheel: function (e) {      
