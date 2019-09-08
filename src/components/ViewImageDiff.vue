@@ -1,9 +1,10 @@
 <template>
 <div class="body">
-  <div class="wait-input" v-if="phase == 'wait-input'">
+  <title-bar :setting="setting" />
+  <div class="wait-input" v-if="setting.phase == 'wait-input'">
     <input ref="input-file" type="file" multiple accept=".jpg,.png" @change="listen__x__onchange" />
   </div>
-  <div class="opened" v-if="phase == 'opened'"
+  <div class="opened" v-if="setting.phase == 'opened'"
     ref="div_opened"
     @touchstart="listen__div_opened__on_x_down($event, 'touch')"
     @mousedown="listen__div_opened__on_x_down($event, 'mouse')"
@@ -21,7 +22,7 @@
       </div>
     </div>
   </div>
-  <div class="opening" v-if="phase == 'opening'">
+  <div class="opening" v-if="setting.phase == 'opening'">
     <div>
       <div class="w-spinner"><div class="spinner" v-show="progressErrorText == ''"></div></div>
       <span>{{ progressText }}</span>
@@ -34,96 +35,134 @@
 <script>
 /* eslint-disable no-console */
 import FrameImageDiff from '@/components/FrameImageDiff'
+import TitleBar from '@/components/TitleBar'
 import PARSE from '@/js/parse.js'
 import MISC from '@/js/miscellaneous.js'
 import path from 'path'
+
+function sleep (ms) {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(), ms)
+  })
+}
+
 export default {
   components: {
-    'frame-image-diff': FrameImageDiff
+    'frame-image-diff': FrameImageDiff,
+    'title-bar': TitleBar
   },
   data: function () {
     return {
-      phase: 'wait-input',
       frames: [[]],
       framePanCoord: undefined,
       frameZoom: undefined,
       frameMouseOn: undefined,
+      moveTouch: undefined,
+      zoomTouch: undefined,
       progressText: '',
       progressErrorText: '',
+      setting: {
+        phase: 'wait-input',
+        fullscreen: false
+      }
     }
   },
   methods: {
     listen__x__onchange: async function (e) {
-      this.phase = 'opening'
-      const files = e.target.files
-      try {
-        let data0 = []
-        for (const file of files) {
-          this.progressText = `parse ${file.name}`
-          const res = await PARSE.parseImage(file)
-          
-          let {name, params, index} = this.parseName(file.name)
-          data0.push({image: res, name, params, index})
+      const Vue = this
+      if (Vue.setting.fullscreen == true) {
+        if (document.body.mozRequestFullScreen) {
+          document.body.mozRequestFullScreen()
+        } else if (document.body.webkitRequestFullscreen) {
+          document.body.webkitRequestFullScreen()
         }
-        data0.sort((v1, v2) => v1.index - v2.index)
-        let data = []
-        for (let idx in data0) {
-          const defWidth = data0[0].image.width
-          const defHeight = data0[0].image.height
-          const datum = data0[idx]
-          const image = datum.image
-          let cornerstonImage
-          if (defWidth != image.width || defHeight != image.height) {
-            const pixelData = MISC.resizeImg(image.pixelData, image.width, image.height, defWidth, defHeight)
-            cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, pixelData, defWidth, defHeight)
-          } else {
-            cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, image.pixelData, defWidth, defHeight)
-          }
-          data.push({cornerstonImage, name: datum.name, params: datum.params})
-        }
-        var frames
-        if (data.length < 3) {
-          frames = [[]]
-          for (const datum of data) {
-            frames[0].push(datum)
-          }
-        } else if (data.length < 9) {
-          frames = [[], []]
-          let idx = 0
-          for (const datum of data) {
-            frames[idx < data.length / 2? 0 : 1].push(datum)
-            idx++
-          }
-        } else {
-          frames = [[], [], []]
-          let idx = 0
-          for (const datum of data) {
-            frames[idx < data.length / 3? 0 : (idx < 2 * data.length / 3? 1 : 2)].push(datum)
-            idx++
-          }
-        }
-        if (frames.length > 1) {
-          const firstFrames_ = frames[0]
-          let lastFrames_ = frames[frames.length - 1]
-          lastFrames_.push(...new Array(firstFrames_.length - lastFrames_.length).fill(undefined))
-        }
-        this.phase = 'opened'
-        this.frames = frames
-      } catch (err) {
-        console.log(err)
-        this.progressErrorText = err
       }
+      await sleep(500)
+      Vue.$nextTick(async () => {
+        Vue.setting.phase = 'opening'  
+        const files = e.target.files
+        try {
+          let data0 = []
+          for (const file of files) {
+            Vue.progressText = `parse ${file.name}`
+            const res = await PARSE.parseImage(file)
+            
+            let {name, params, index} = Vue.parseName(file.name)
+            data0.push({image: res, name, params, index})
+          }
+          data0.sort((v1, v2) => v1.index - v2.index)
+          let data = []
+          for (let idx in data0) {
+            const defWidth = data0[0].image.width
+            const defHeight = data0[0].image.height
+            const datum = data0[idx]
+            const image = datum.image
+            let cornerstonImage
+            if (defWidth != image.width || defHeight != image.height) {
+              const pixelData = MISC.resizeImg(image.pixelData, image.width, image.height, defWidth, defHeight)
+              cornerstonImage = await Vue.$cornerstone.createCornerstoneImageRgba(undefined, pixelData, defWidth, defHeight)
+            } else {
+              cornerstonImage = await Vue.$cornerstone.createCornerstoneImageRgba(undefined, image.pixelData, defWidth, defHeight)
+            }
+            data.push({cornerstonImage, name: datum.name, params: datum.params})
+          }
+          var frames
+          if (data.length < 3) {
+            frames = [[]]
+            for (const datum of data) {
+              frames[0].push(datum)
+            }
+          } else if (data.length < 9) {
+            frames = [[], []]
+            let idx = 0
+            for (const datum of data) {
+              frames[idx < data.length / 2? 0 : 1].push(datum)
+              idx++
+            }
+          } else {
+            frames = [[], [], []]
+            let idx = 0
+            for (const datum of data) {
+              frames[idx < data.length / 3? 0 : (idx < 2 * data.length / 3? 1 : 2)].push(datum)
+              idx++
+            }
+          }
+          if (frames.length > 1) {
+            const firstFrames_ = frames[0]
+            let lastFrames_ = frames[frames.length - 1]
+            lastFrames_.push(...new Array(firstFrames_.length - lastFrames_.length).fill(undefined))
+          }
+          Vue.setting.phase = 'opened'
+          Vue.frames = frames
+        } catch (err) {
+          console.log(err)
+          Vue.progressErrorText = err
+        }
+      })
     },
     listen__frame__onmousemove: function (param) {
       this.framePanCoord = param
     },
     listen__div_opened__on_x_down: function (e, type) {
       const Vue = this
-      if (Vue.framePanCoord == undefined) return
-      
-      const eventNameMove = type == 'mouse'? 'mousemove' : 'touchmove'
-      const eventNameUp = type == 'mouse'? 'mouseup' : 'touchend'
+      function mouseUpHandler () {
+        Vue.$el.removeEventListener('mousemove', mouseMoveHandler)
+        Vue.$el.removeEventListener('mouseup', mouseUpHandler)
+      }
+      function touchUpHandler (e) {
+        if (Array.prototype.findIndex.call(e.changedTouches, v => v.identifier == Vue.moveTouch.identifier) == -1) return
+        Vue.moveTouch = undefined
 
+        Vue.$el.removeEventListener('touchmove', touchMoveHandler)
+        Vue.$el.removeEventListener('touchend', touchUpHandler)
+      }
+      function touchUpHandler2 (e) {
+        if (Array.prototype.findIndex.call(e.changedTouches, v => v.identifier == Vue.zoomTouch.identifier) == -1) return
+        Vue.zoomTouch = undefined
+
+        Vue.$el.removeEventListener('touchmove', touchMoveHandler2)
+        Vue.$el.removeEventListener('touchend', touchUpHandler2)
+      }
       function mouseMoveHandler (e) {
         const deltaX = e.pageX - lastX
         const deltaY = e.pageY - lastY
@@ -134,17 +173,68 @@ export default {
         const y = Vue.framePanCoord.y + (deltaY / Vue.frameZoom)
         Vue.framePanCoord = {x, y}
       }
+      function touchMoveHandler (e) {
+        const idx = Array.prototype.findIndex.call(e.changedTouches, v => v.identifier == Vue.moveTouch.identifier)
+        if (idx == -1) return
+        const touch = e.changedTouches[idx]
 
-      function mouseUpHandler () {
-        Vue.$el.removeEventListener(eventNameMove, mouseMoveHandler)
-        Vue.$el.removeEventListener(eventNameUp, mouseUpHandler)
+        const deltaX = touch.pageX - lastX
+        const deltaY = touch.pageY - lastY
+        lastX = touch.pageX
+        lastY = touch.pageY
+
+        if (Vue.zoomTouch == undefined) {
+          const x = Vue.framePanCoord.x + (deltaX / Vue.frameZoom)
+          const y = Vue.framePanCoord.y + (deltaY / Vue.frameZoom)
+          Vue.framePanCoord = {x, y}
+        }
       }
-      let lastX, lastY
-      if (e.which === 1) {
+      function touchMoveHandler2 (e) {
+        const idx = Array.prototype.findIndex.call(e.changedTouches, v => v.identifier == Vue.zoomTouch.identifier)
+        if (Vue.moveTouch == undefined || idx == -1) return
+        const touch = e.changedTouches[idx]
+
+        const cdist = 2.5 * (Math.abs(touch.pageX - Vue.moveTouch.pageX) + Math.abs(touch.pageY - Vue.moveTouch.pageY)) / (window.innerHeight + window.innerWidth)
+        if (dist == undefined) {
+          dist = cdist
+          return
+        }
+        const as = cdist - dist
+        dist = cdist
+        const scale = Vue.frameZoom + as
+        if (scale > 0) Vue.frameZoom = scale
+      }
+      function mouseDownHandler () {
+        Vue.$el.addEventListener('mousemove', mouseMoveHandler)
+        Vue.$el.addEventListener('mouseup', mouseUpHandler)
+      }
+      function touchDownHandler () {
+        Vue.$el.addEventListener('touchmove', touchMoveHandler)
+        Vue.$el.addEventListener('touchend', touchUpHandler)
+      }
+      function touchDown2Handler () {
+        Vue.$el.addEventListener('touchmove', touchMoveHandler2)
+        Vue.$el.addEventListener('touchend', touchUpHandler2)
+      }
+
+      if (Vue.framePanCoord == undefined) return
+
+      let lastX, lastY, dist
+      if (type == 'touch' && e.which == 0) {
+        e.preventDefault()
+        if (Vue.moveTouch != undefined) {
+          Vue.zoomTouch = Vue.copyTouch(e.changedTouches[0])
+          touchDown2Handler()
+        } else {
+          Vue.moveTouch = Vue.copyTouch(e.changedTouches[0])
+          lastX = e.changedTouches[0].pageX
+          lastY = e.changedTouches[0].pageY
+          touchDownHandler()
+        }
+      } else if (type == 'mouse' && e.which == 1) {
         lastX = e.pageX
         lastY = e.pageY
-        Vue.$el.addEventListener(eventNameMove, mouseMoveHandler)
-        Vue.$el.addEventListener(eventNameUp, mouseUpHandler)
+        mouseDownHandler()
       }
     },
     listen__div_opened__onwheel: function (e) {      
@@ -156,7 +246,7 @@ export default {
       if (scale > 0) Vue.frameZoom = scale
       return false
     },
-    parseName: function(str) {
+    parseName: function (str) {
       const ext = path.extname(str)
       str = str.substr(0, str.length - ext.length)
       let tokens = str.split('__')
@@ -176,6 +266,9 @@ export default {
         else params[key] = value
       }
       return {name, params, index}
+    },
+    copyTouch: function (touch) {
+      return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY };
     }
   },
   created () {
@@ -187,14 +280,17 @@ export default {
 
 <style scoped>
 .body {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   background: rgb(230, 230, 230);
+  min-height: 0;
 }
 div.wait-input {
   display: flex;
   width: 100%;
-  height: 100%;
+  flex: 1 0 0;
   align-items: center;
   justify-content: center;
 }
@@ -202,7 +298,7 @@ div.opening {
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100%;
+  flex: 1 0 0;
   align-items: center;
   justify-content: center;
 }
@@ -220,7 +316,7 @@ div.opening span {
 div.opened {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1 0 0;
   box-sizing: border-box;
   overflow: hidden;
   margin: 0;
