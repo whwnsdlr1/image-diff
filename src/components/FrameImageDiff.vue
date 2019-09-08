@@ -32,16 +32,22 @@ export default {
       const image = this.frameData.cornerstonImage
       let defViewport = this.$cornerstone.getDefaultViewport(this.$el, image)
 
-      const style = getComputedStyle(this.$el)
-      const thumbnailHeight = parseInt(style.height, 10)
-      const thumbnailWidth = parseInt(style.width, 10)
-      const scaleY = thumbnailHeight / image.height
-      const scaleX = thumbnailWidth / image.width
-      const scale = (scaleY < scaleX)? scaleY : scaleX
-      defViewport.scale = scale
-      defViewport.translation.y = 0
-      defViewport.translation.x = 0
-      this.$emit('vue-mounted', {scale, x: defViewport.translation.x, y: defViewport.translation.y})
+      if (this.framePanCoord == undefined) {
+        const style = getComputedStyle(this.$el)
+        const thumbnailHeight = parseInt(style.height, 10)
+        const thumbnailWidth = parseInt(style.width, 10)
+        const scaleY = thumbnailHeight / image.height
+        const scaleX = thumbnailWidth / image.width
+        const scale = (scaleY < scaleX)? scaleY : scaleX
+        defViewport.scale = scale
+        defViewport.translation.y = 0
+        defViewport.translation.x = 0
+        this.$emit('vue-mounted', {scale, x: defViewport.translation.x, y: defViewport.translation.y})
+      } else {
+        defViewport.scale = this.frameZoom
+        defViewport.translation.y = this.framePanCoord.y
+        defViewport.translation.x = this.framePanCoord.x
+      }
       this.$cornerstone.displayImage(this.$el, this.frameData.cornerstonImage, defViewport)
     }
   },

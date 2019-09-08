@@ -3,40 +3,42 @@ import JPEGJS from 'jpeg-js'
 import PNGJS from 'pngjs'
 import path from 'path'
 
-function parseJpg (file) {
-  return new Promise(function (resolve, reject) {
+function readFile (file) {
+  return new Promise((resolve) => {
     let reader = new FileReader()
     reader.onload = async function (e) {
-      try {
-        const byteArray = new Uint8Array(e.target.result)
-        const data = JPEGJS.decode(byteArray, true)
-
-        resolve({pixelData: data.data, width: data.width, height: data.height})
-      } catch (err) {
-        reject(err)
-      }
+      resolve(e.target.result)
     }
     reader.readAsArrayBuffer(file)
   })
 }
 
-function parsePng (file) {
+function parseJpg (arrayBuffer) {
   return new Promise(function (resolve, reject) {
-    let reader = new FileReader()
-    reader.onload = function (e) {
-      const byteArray = new Uint8Array(e.target.result)
-      new PNGJS.PNG({filterType: 4}).parse(byteArray, async function (error, data) {
-        try {
-          if (error != null)
-            reject(error)
+    try {
+      const byteArray = new Uint8Array(arrayBuffer)
+      const data = JPEGJS.decode(byteArray, true)
 
-          resolve({pixelData: data.data, width: data.width, height: data.height})
-        } catch (err) {
-          reject(err)
-        }
-      })
+      resolve({pixelData: data.data, width: data.width, height: data.height})
+    } catch (err) {
+      reject(err)
     }
-    reader.readAsArrayBuffer(file)
+  })
+}
+
+function parsePng (arrayBuffer) {
+  return new Promise(function (resolve, reject) {
+    const byteArray = new Uint8Array(arrayBuffer)
+    new PNGJS.PNG({filterType: 4}).parse(byteArray, async function (error, data) {
+      try {
+        if (error != null)
+          reject(error)
+
+        resolve({pixelData: data.data, width: data.width, height: data.height})
+      } catch (err) {
+        reject(err)
+      }
+    })
   })
 }
 
@@ -45,9 +47,11 @@ async function parseImage (file) {
   try {
     let res
     if (path.extname(file.name) == '.jpg') {
-      res = await parseJpg(file)
+      const arrayBuffer = await readFile(file)
+      res = await parseJpg(arrayBuffer)
     } else if(path.extname(file.name) == '.png') {
-      res = await parsePng(file)
+      const arrayBuffer = await readFile(file)
+      res = await parsePng(arrayBuffer)
     } else {
       throw new Error('unsupported extension')
     }
@@ -58,5 +62,7 @@ async function parseImage (file) {
 }
 
 export default {
-  parseImage
+  parseImage,
+  parsePng,
+  parseJpg
 }

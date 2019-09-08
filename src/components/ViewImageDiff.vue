@@ -1,8 +1,11 @@
 <template>
 <div class="body">
+  <!--
   <div class="wait-input" v-if="phase == 'wait-input'">
     <input ref="input-file" type="file" multiple accept=".jpg,.png" @change="listen__x__onchange" />
   </div>
+  -->
+  <temp v-if="phase == 'wait-input'" @vue-change="listen__temp__onchange" />
   <div class="opened" v-if="phase == 'opened'"
     ref="div_opened"
     @touchstart="listen__div_opened__on_x_down($event, 'touch')"
@@ -34,12 +37,14 @@
 <script>
 /* eslint-disable no-console */
 import FrameImageDiff from '@/components/FrameImageDiff'
+import Temp from '@/components/Temp'
 import PARSE from '@/js/parse.js'
 import MISC from '@/js/miscellaneous.js'
 import path from 'path'
 export default {
   components: {
-    'frame-image-diff': FrameImageDiff
+    'frame-image-diff': FrameImageDiff,
+    'temp': Temp
   },
   data: function () {
     return {
@@ -58,18 +63,94 @@ export default {
       const files = e.target.files
       try {
         let data0 = []
+        let defWidth = 0, defHeight = 0
         for (const file of files) {
           this.progressText = `parse ${file.name}`
           const res = await PARSE.parseImage(file)
           
           let {name, params, index} = this.parseName(file.name)
           data0.push({image: res, name, params, index})
+          defWidth = Math.max(defWidth, res.width)
+          defHeight = Math.max(defHeight, res.height)
         }
         data0.sort((v1, v2) => v1.index - v2.index)
         let data = []
         for (let idx in data0) {
-          const defWidth = data0[0].image.width
-          const defHeight = data0[0].image.height
+          const datum = data0[idx]
+          const image = datum.image
+          let cornerstonImage
+          if (defWidth != image.width || defHeight != image.height) {
+            const pixelData = MISC.resizeImg(image.pixelData, image.width, image.height, defWidth, defHeight)
+            cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, pixelData, defWidth, defHeight)
+          } else {
+            cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, image.pixelData, defWidth, defHeight)
+          }
+          data.push({cornerstonImage, name: datum.name, params: datum.params})
+        }
+        var frames
+        if (data.length < 3) {
+          frames = [[]]
+          for (const datum of data) {
+            frames[0].push(datum)
+          }
+        } else if (data.length < 9) {
+          frames = [[], []]
+          let idx = 0
+          for (const datum of data) {
+            frames[idx < data.length / 2? 0 : 1].push(datum)
+            idx++
+          }
+        } else {
+          frames = [[], [], []]
+          let idx = 0
+          for (const datum of data) {
+            frames[idx < data.length / 3? 0 : (idx < 2 * data.length / 3? 1 : 2)].push(datum)
+            idx++
+          }
+        }
+        if (frames.length > 1) {
+          const firstFrames_ = frames[0]
+          let lastFrames_ = frames[frames.length - 1]
+          lastFrames_.push(...new Array(firstFrames_.length - lastFrames_.length).fill(undefined))
+        }
+        this.phase = 'opened'
+        this.frames = frames
+      } catch (err) {
+        console.log(err)
+        this.progressErrorText = err
+      }
+    },
+    listen__temp__onchange: async function (param) {
+      function fetchPng (url) {
+        return new Promise((resolve) => {
+          console.log(url)
+          // const f = require('@/assets/super-resolution/beforever/0/bicubic__index__1.png')
+          const f = require('@/assets/super-resolution/' + url)
+          fetch(f).then(res => {
+            res.arrayBuffer().then(res => resolve(res))
+          })
+        })
+      }
+      
+      this.phase = 'opening'
+      const files = param
+      try {
+        let data0 = []
+        let defWidth = 0, defHeight = 0
+        for (const file of files) {
+          this.progressText = `parse ${file.name}`
+
+          const arrayBuffer = await fetchPng(file.url)
+          const res = await PARSE.parsePng(arrayBuffer)
+          
+          let {name, params, index} = this.parseName(file.name)
+          data0.push({image: res, name, params, index})
+          defWidth = Math.max(defWidth, res.width)
+          defHeight = Math.max(defHeight, res.height)
+        }
+        data0.sort((v1, v2) => v1.index - v2.index)
+        let data = []
+        for (let idx in data0) {
           const datum = data0[idx]
           const image = datum.image
           let cornerstonImage
