@@ -1,4 +1,8 @@
 # image-diff
+client web application to compare multiple images.
+
+## Demo
+you can demo in [https://whwnsdlr1.github.io/image-diff](https://whwnsdlr1.github.io/image-diff/).
 
 ## Project setup
 ```
