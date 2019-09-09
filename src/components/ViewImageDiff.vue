@@ -157,69 +157,72 @@ export default {
       }
       
       const Vue = this
-      this.phase = 'opening'
+      this.setting.phase = 'opening'
       const files = param
-      try {
-        let data0 = []
-        let defWidth = 0, defHeight = 0
-        for (const file of files) {
-          this.progressText = `parse ${file.name}`
+      console.log('here')
+      Vue.$nextTick(async () => {
+        try {
+          let data0 = []
+          let defWidth = 0, defHeight = 0
+          for (const file of files) {
+            this.progressText = `parse ${file.name}`
 
-          const arrayBuffer = await fetchPng(file.url)
-          const res = await PARSE.parsePng(arrayBuffer)
-          
-          let {name, params, index} = this.parseName(file.name)
-          data0.push({image: res, name, params, index})
-          defWidth = Math.max(defWidth, res.width)
-          defHeight = Math.max(defHeight, res.height)
-        }
-        data0.sort((v1, v2) => v1.index - v2.index)
-        let data = []
-        for (let idx in data0) {
-          const datum = data0[idx]
-          const image = datum.image
-          let cornerstonImage
-          if (defWidth != image.width || defHeight != image.height) {
-            const pixelData = MISC.resizeImg(image.pixelData, image.width, image.height, defWidth, defHeight)
-            cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, pixelData, defWidth, defHeight)
+            const arrayBuffer = await fetchPng(file.url)
+            const res = await PARSE.parsePng(arrayBuffer)
+            
+            let {name, params, index} = this.parseName(file.name)
+            data0.push({image: res, name, params, index})
+            defWidth = Math.max(defWidth, res.width)
+            defHeight = Math.max(defHeight, res.height)
+          }
+          data0.sort((v1, v2) => v1.index - v2.index)
+          let data = []
+          for (let idx in data0) {
+            const datum = data0[idx]
+            const image = datum.image
+            let cornerstonImage
+            if (defWidth != image.width || defHeight != image.height) {
+              const pixelData = MISC.resizeImg(image.pixelData, image.width, image.height, defWidth, defHeight)
+              cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, pixelData, defWidth, defHeight)
+            } else {
+              cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, image.pixelData, defWidth, defHeight)
+            }
+            data.push({cornerstonImage, name: datum.name, params: datum.params})
+          }
+            
+          var frames
+          if (data.length < 3) {
+            frames = [[]]
+            for (const datum of data) {
+              frames[0].push(datum)
+            }
+          } else if (data.length < 9) {
+            frames = [[], []]
+            let idx = 0
+            for (const datum of data) {
+              frames[idx < data.length / 2? 0 : 1].push(datum)
+              idx++
+            }
           } else {
-            cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, image.pixelData, defWidth, defHeight)
+            frames = [[], [], []]
+            let idx = 0
+            for (const datum of data) {
+              frames[idx < data.length / 3? 0 : (idx < 2 * data.length / 3? 1 : 2)].push(datum)
+              idx++
+            }
           }
-          data.push({cornerstonImage, name: datum.name, params: datum.params})
+          if (frames.length > 1) {
+            const firstFrames_ = frames[0]
+            let lastFrames_ = frames[frames.length - 1]
+            lastFrames_.push(...new Array(firstFrames_.length - lastFrames_.length).fill(undefined))
+          }
+          Vue.setting.phase = 'opened'
+          Vue.frames = frames
+        } catch (err) {
+          console.log(err)
+          Vue.progressErrorText = err
         }
-          
-        var frames
-        if (data.length < 3) {
-          frames = [[]]
-          for (const datum of data) {
-            frames[0].push(datum)
-          }
-        } else if (data.length < 9) {
-          frames = [[], []]
-          let idx = 0
-          for (const datum of data) {
-            frames[idx < data.length / 2? 0 : 1].push(datum)
-            idx++
-          }
-        } else {
-          frames = [[], [], []]
-          let idx = 0
-          for (const datum of data) {
-            frames[idx < data.length / 3? 0 : (idx < 2 * data.length / 3? 1 : 2)].push(datum)
-            idx++
-          }
-        }
-        if (frames.length > 1) {
-          const firstFrames_ = frames[0]
-          let lastFrames_ = frames[frames.length - 1]
-          lastFrames_.push(...new Array(firstFrames_.length - lastFrames_.length).fill(undefined))
-        }
-        Vue.setting.phase = 'opened'
-        Vue.frames = frames
-      } catch (err) {
-        console.log(err)
-        Vue.progressErrorText = err
-      }
+      })
     },
     listen__frame__onmousemove: function (param) {
       this.framePanCoord = param
