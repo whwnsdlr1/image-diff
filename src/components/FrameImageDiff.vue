@@ -2,7 +2,7 @@
   <div class="body"
     @mouseenter="() => { if (frameData != undefined) { $emit('vue-mouseenter', {}) }}"
     @mouseleave="() => { if (frameData != undefined) { $emit('vue-mouseleave', {}) }}">
-    <div v-if='frameData != undefined && frameMouseOn == true' class="overlay">
+    <div v-if='frameData != undefined' class="overlay">
       <span class="name">{{ frameData.name }}</span>
       <div v-for="(value, key, index) in frameData.params" :key="`params-${index}`"
         class="params"

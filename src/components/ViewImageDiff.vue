@@ -1,6 +1,6 @@
 <template>
 <div class="body">
-  <title-bar :setting="setting" />
+  <title-bar :setting="setting" @vue-move-home="listen__x__tohome" />
   <!--
   <div class="wait-input" v-if="setting.phase == 'wait-input'">
     <input ref="input-file" type="file" multiple accept=".jpg,.png" @change="listen__x__onchange" />
@@ -148,7 +148,6 @@ export default {
     listen__temp__onchange: async function (param) {
       function fetchPng (url) {
         return new Promise((resolve) => {
-          console.log(url)
           // const f = require('@/assets/super-resolution/beforever/0/bicubic__index__1.png')
           const f = require('@/assets/super-resolution/' + url)
           fetch(f).then(res => {
@@ -327,6 +326,13 @@ export default {
       const scale = Vue.frameZoom + as
       if (scale > 0) Vue.frameZoom = scale
       return false
+    },
+    listen__x__tohome: function () {
+      this.framePanCoord = undefined
+      this.frameZoom = undefined
+      this.frames = [[]]
+      this.moveTouch = undefined
+      this.zoomTouch = undefined
     },
     parseName: function (str) {
       const ext = path.extname(str)

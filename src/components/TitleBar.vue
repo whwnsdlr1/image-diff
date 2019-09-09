@@ -13,6 +13,7 @@ export default {
   methods: {
     listen__home__onclick: function () {
       this.setting.phase = 'wait-input'
+      this.$emit('vue-move-home', {})
     },
     listen__fullscreen__onclick: function () {
       if (this.setting.fullscreen == true) {
