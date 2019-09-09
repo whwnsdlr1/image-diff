@@ -1,9 +1,12 @@
 <template>
 <div class="body">
   <title-bar :setting="setting" />
+  <!--
   <div class="wait-input" v-if="setting.phase == 'wait-input'">
     <input ref="input-file" type="file" multiple accept=".jpg,.png" @change="listen__x__onchange" />
   </div>
+  -->
+  <temp v-if="setting.phase == 'wait-input'" @vue-change="listen__temp__onchange" />
   <div class="opened" v-if="setting.phase == 'opened'"
     ref="div_opened"
     @touchstart="listen__div_opened__on_x_down($event, 'touch')"
@@ -71,7 +74,7 @@ export default {
   },
   methods: {
     listen__x__onchange: async function (e) {
-            const Vue = this
+      const Vue = this
       if (Vue.setting.fullscreen == true) {
         if (document.body.mozRequestFullScreen) {
           document.body.mozRequestFullScreen()
@@ -154,6 +157,7 @@ export default {
         })
       }
       
+      const Vue = this
       this.phase = 'opening'
       const files = param
       try {
@@ -182,55 +186,41 @@ export default {
           } else {
             cornerstonImage = await this.$cornerstone.createCornerstoneImageRgba(undefined, image.pixelData, defWidth, defHeight)
           }
-          data0.sort((v1, v2) => v1.index - v2.index)
-          let data = []
-          for (let idx in data0) {
-            const defWidth = data0[0].image.width
-            const defHeight = data0[0].image.height
-            const datum = data0[idx]
-            const image = datum.image
-            let cornerstonImage
-            if (defWidth != image.width || defHeight != image.height) {
-              const pixelData = MISC.resizeImg(image.pixelData, image.width, image.height, defWidth, defHeight)
-              cornerstonImage = await Vue.$cornerstone.createCornerstoneImageRgba(undefined, pixelData, defWidth, defHeight)
-            } else {
-              cornerstonImage = await Vue.$cornerstone.createCornerstoneImageRgba(undefined, image.pixelData, defWidth, defHeight)
-            }
-            data.push({cornerstonImage, name: datum.name, params: datum.params})
-          }
-          var frames
-          if (data.length < 3) {
-            frames = [[]]
-            for (const datum of data) {
-              frames[0].push(datum)
-            }
-          } else if (data.length < 9) {
-            frames = [[], []]
-            let idx = 0
-            for (const datum of data) {
-              frames[idx < data.length / 2? 0 : 1].push(datum)
-              idx++
-            }
-          } else {
-            frames = [[], [], []]
-            let idx = 0
-            for (const datum of data) {
-              frames[idx < data.length / 3? 0 : (idx < 2 * data.length / 3? 1 : 2)].push(datum)
-              idx++
-            }
-          }
-          if (frames.length > 1) {
-            const firstFrames_ = frames[0]
-            let lastFrames_ = frames[frames.length - 1]
-            lastFrames_.push(...new Array(firstFrames_.length - lastFrames_.length).fill(undefined))
-          }
-          Vue.setting.phase = 'opened'
-          Vue.frames = frames
-        } catch (err) {
-          console.log(err)
-          Vue.progressErrorText = err
+          data.push({cornerstonImage, name: datum.name, params: datum.params})
         }
-      })
+          
+        var frames
+        if (data.length < 3) {
+          frames = [[]]
+          for (const datum of data) {
+            frames[0].push(datum)
+          }
+        } else if (data.length < 9) {
+          frames = [[], []]
+          let idx = 0
+          for (const datum of data) {
+            frames[idx < data.length / 2? 0 : 1].push(datum)
+            idx++
+          }
+        } else {
+          frames = [[], [], []]
+          let idx = 0
+          for (const datum of data) {
+            frames[idx < data.length / 3? 0 : (idx < 2 * data.length / 3? 1 : 2)].push(datum)
+            idx++
+          }
+        }
+        if (frames.length > 1) {
+          const firstFrames_ = frames[0]
+          let lastFrames_ = frames[frames.length - 1]
+          lastFrames_.push(...new Array(firstFrames_.length - lastFrames_.length).fill(undefined))
+        }
+        Vue.setting.phase = 'opened'
+        Vue.frames = frames
+      } catch (err) {
+        console.log(err)
+        Vue.progressErrorText = err
+      }
     },
     listen__frame__onmousemove: function (param) {
       this.framePanCoord = param
