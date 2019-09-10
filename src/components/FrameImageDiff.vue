@@ -7,7 +7,7 @@
       <div v-for="(value, key, index) in frameData.params" :key="`params-${index}`"
         class="params"
         :style="{'margin-top': '0px', 'padding': '0px'}">
-        <span>{{ key }}: {{ value }}</span>
+        <span class="name">{{ key }}:</span><span class="value">&nbsp;{{ value }}</span>
       </div>
     </div>
   </div>
@@ -100,11 +100,14 @@ export default {
   padding: 1px 7px;
   pointer-events: none;
 }
-.overlay span.name {
-  font-size: 14px;
+.overlay > span.name {
+  font-size: 16px;
   font-weight: bold;
 }
 .overlay .params {
   font-size: 12px;
+}
+.overlay .params span.name {
+  font-weight: bold;
 }
 </style>
