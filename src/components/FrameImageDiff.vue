@@ -75,6 +75,7 @@ export default {
       this.$cornerstone.addLayer(this.$el, this.frameData.cornerstonImage, {viewport: defViewport})
       const layerId = this.$cornerstone.addLayer(this.$el, cornerstoneLayerImage, {viewport: defViewport, opacity: 0.9})
       const layer = this.$cornerstone.getLayer(this.$el, layerId)
+      console.log(layer)
       console.log(this.$cornerstone.getLayers(this.$el))
       console.log(this.$cornerstone)
     }
