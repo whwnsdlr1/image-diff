@@ -2,7 +2,7 @@
   <div class="body"
     @mouseenter="() => { if (frameData != undefined) { $emit('vue-mouseenter', {}) }}"
     @mouseleave="() => { if (frameData != undefined) { $emit('vue-mouseleave', {}) }}">
-    <div v-if='frameData != undefined' class="overlay">
+    <div v-if="frameData != undefined && (setting.alwaysShowOverlayText == true || frameMouseOn == true)" class="overlay">
       <span class="name">{{ frameData.name }}</span>
       <div v-for="(value, key, index) in frameData.params" :key="`params-${index}`"
         class="params"
@@ -10,6 +10,12 @@
         <span class="name">{{ key }}:</span><span class="value">&nbsp;{{ value }}</span>
       </div>
     </div>
+    <transition name="fade">
+      <div v-if="frameData != undefined && (setting.diff == true)" class="overlay-bottom">
+        <span v-show="frameData.resized == true" class="tag-resized">resized</span>
+        <span v-show="frameData.resized == false" class="size">{{ `${frameData.cornerstonImage.width}x${frameData.cornerstonImage.height}` }}</span>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -18,13 +24,24 @@
 import elementResizeEvent from 'element-resize-event'
 
 export default {
-  props: ['frame-data', 'pan-x', 'frame-pan-coord', 'frame-zoom', 'frame-mouse-on'],
+  props: ['frame-data', 'pan-x', 'frame-pan-coord', 'frame-zoom', 'frame-mouse-on', 'setting'],
   methods: {
     listen__x__onresize: function () {
-      this.$cornerstone.resize(this.$el, false)
+      const Vue = this
+      Vue.$cornerstone.resize(Vue.$el, false)
+      if (Vue.frameData != undefined) {
+        let viewport = Vue.$cornerstone.getViewport(Vue.$el)
+        if (viewport != undefined) {
+          viewport.scale = Vue.frameZoom
+          viewport.translation.x = Vue.framePanCoord.x
+          viewport.translation.y = Vue.framePanCoord.y
+          Vue.$cornerstone.setViewport(Vue.$el, viewport)
+          Vue.$cornerstone.updateImage(Vue.$el)
+        }
+      }
     },
   },
-  mounted () {
+  async mounted () {
     if (this.frameData !== undefined) {
       elementResizeEvent(this.$el, this._.debounce(this.listen__x__onresize, 10))
 
@@ -48,7 +65,18 @@ export default {
         defViewport.translation.y = this.framePanCoord.y
         defViewport.translation.x = this.framePanCoord.x
       }
-      this.$cornerstone.displayImage(this.$el, this.frameData.cornerstonImage, defViewport)
+      // this.$cornerstone.displayImage(this.$el, this.frameData.cornerstonImage, defViewport)
+      const cornerstoneLayerImage = await this.$cornerstone.createCornerstoneImageRgba(
+        undefined,
+        new Uint8Array(this.frameData.cornerstonImage.width * this.frameData.cornerstonImage.height * 4).fill(255),
+        this.frameData.cornerstonImage.width,
+        this.frameData.cornerstonImage.height
+      )
+      this.$cornerstone.addLayer(this.$el, this.frameData.cornerstonImage, {viewport: defViewport})
+      const layerId = this.$cornerstone.addLayer(this.$el, cornerstoneLayerImage, {viewport: defViewport, opacity: 0.9})
+      const layer = this.$cornerstone.getLayer(this.$el, layerId)
+      console.log(this.$cornerstone.getLayers(this.$el))
+      console.log(this.$cornerstone)
     }
   },
   watch: {
@@ -60,7 +88,7 @@ export default {
         this.$cornerstone.setViewport(this.$el, viewport)
       }
     },
-    frameZoom: function(frameZoom) {
+    frameZoom: function (frameZoom) {
       if (this.frameData != undefined && frameZoom != undefined) {
         let viewport = this.$cornerstone.getViewport(this.$el)
         viewport.scale = frameZoom
@@ -109,5 +137,29 @@ export default {
 }
 .overlay .params span.name {
   font-weight: bold;
+}
+.overlay-bottom {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.65);
+  border-top: 1px solid rgba(0, 0, 0, 0.65);
+  padding: 1px 7px;
+  pointer-events: none;
+}
+.overlay-bottom span.size {
+  font-size: 14px;
+}
+.overlay-bottom span.tag-resized {
+  font-size: 14px;
+  color: rgb(235, 50, 50);
+  font-weight: bold;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>

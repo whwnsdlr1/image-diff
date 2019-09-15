@@ -5,12 +5,14 @@ import VueLodash from 'vue-lodash'
 import Toasted from 'vue-toasted'
 
 import cornerstonePlugin from '@/plugins/cornerstonePlugin'
+import modal from '@/plugins/modal'
 
 Vue.config.productionTip = false
 
 // Vue.use(BootstrapVue)
 Vue.use(VueLodash)
 Vue.use(cornerstonePlugin)
+Vue.use(modal)
 Vue.use(Toasted)
 
 new Vue({

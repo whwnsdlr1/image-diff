@@ -1,7 +1,7 @@
 import Modal from './Modal.vue'
 
 export default {
-  install: function (Vue, options) {
+  install: function (Vue) {
     const ModalConstructor = Vue.extend(Modal)
     Vue.prototype.$mModal = {
       show: function (type, data) {
