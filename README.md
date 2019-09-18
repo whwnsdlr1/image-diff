@@ -31,5 +31,6 @@ and access to http://localhost:port
 - Google Chrome 77+ on Android 9+
 - Mozilla FireFox 68+
 
+## Project setup
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
