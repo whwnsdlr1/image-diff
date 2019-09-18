@@ -8,8 +8,8 @@ currently support jpg, png format
 <br />
 <br />
 this project was built with the Vue framework and many other libraries.(you can see it in package.json)
-
-
+<br />
+<br />
 
 ## Demo
 you can demo in [https://whwnsdlr1.github.io/image-diff](https://whwnsdlr1.github.io/image-diff/).
@@ -25,11 +25,15 @@ yarn install
 yarn run serve
 ```
 and access to http://localhost:port
+<br />
+<br />
 
 ## Browser support - (tested)
 - Google Chrome 77+
 - Google Chrome 77+ on Android 9+
 - Mozilla FireFox 68+
+<br />
+<br />
 
 ## Project setup
 ### Customize configuration
