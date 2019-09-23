@@ -1,9 +1,10 @@
 <template>
 <div class="body">
-  <title-bar :setting="setting" @vue-move-home="listen__x__tohome" />
-  <div class="wait-input" v-if="setting.phase == 'wait-input'">
-    <input ref="input-file" type="file" multiple accept=".jpg,.png" @change="listen__x__onchange" />
-  </div>
+  <title-bar :setting="setting"
+    :frame-pan-coord="framePanCoord"
+    :frame-zoom="frameZoom"
+    @vue-move-home="listen__x__tohome" />
+  <drop-view v-if="setting.phase == 'wait-input'" @vue-input-files="listen__drop_view__oninput"/>
   <div class="opened" v-if="setting.phase == 'opened'"
     ref="div_opened"
     @touchstart="listen__div_opened__on_x_down($event, 'touch')"
@@ -34,6 +35,7 @@
 
 <script>
 /* eslint-disable no-console */
+import DropView from '@/components/DropView'
 import FrameImageDiff from '@/components/FrameImageDiff'
 import TitleBar from '@/components/TitleBar'
 import PARSE from '@/js/parse.js'
@@ -48,6 +50,7 @@ function sleep (ms) {
 
 export default {
   components: {
+    'drop-view': DropView,
     'frame-image-diff': FrameImageDiff,
     'title-bar': TitleBar
   },
@@ -68,7 +71,7 @@ export default {
     }
   },
   methods: {
-    listen__x__onchange: async function (e) {
+    listen__drop_view__oninput: async function (files) {
       const Vue = this
       if (Vue.setting.fullscreen == true) {
         if (document.body.mozRequestFullScreen) {
@@ -77,10 +80,9 @@ export default {
           document.body.webkitRequestFullScreen()
         }
       }
-      await sleep(500)
+      await sleep(200)
       Vue.$nextTick(async () => {
-        Vue.setting.phase = 'opening'  
-        const files = e.target.files
+        Vue.setting.phase = 'opening'
         try {
           let data0 = []
           for (const file of files) {

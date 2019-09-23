@@ -11,13 +11,14 @@
 </template>
 
 <script>
+/* eslint-disable no-console */
 export default {
   methods: {
     listen__x__onclick: function (onclick) {
       onclick()
       this.$destroy()
     },
-    set: function (div, onconfirm, oncancel) {
+    set: function (div) {
       this.$el.querySelector('.row1').appendChild(div)
     }
   },
@@ -95,6 +96,7 @@ export default {
   -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 2px 2px -1px rgba(0, 0, 0, .5), 0 1px 0 rgba(255, 255, 255, .3) inset;
   -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 2px 2px -1px rgba(0, 0, 0, .5), 0 1px 0 rgba(255, 255, 255, .3) inset;
   box-shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 2px 2px -1px rgba(0, 0, 0, .5), 0 1px 0 rgba(255, 255, 255, .3) inset;
+  cursor: pointer;
 }
 .content .row2 button:hover{
   background-color: rgb(220, 220, 220);
