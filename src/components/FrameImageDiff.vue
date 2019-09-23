@@ -21,7 +21,18 @@ export default {
   props: ['frame-data', 'pan-x', 'frame-pan-coord', 'frame-zoom', 'frame-mouse-on'],
   methods: {
     listen__x__onresize: function () {
-      this.$cornerstone.resize(this.$el, false)
+      const Vue = this
+      Vue.$cornerstone.resize(Vue.$el, false)
+      if (Vue.frameData != undefined) {
+        let viewport = Vue.$cornerstone.getViewport(Vue.$el)
+        if (viewport != undefined) {
+          viewport.scale = Vue.frameZoom
+          viewport.translation.x = Vue.framePanCoord.x
+          viewport.translation.y = Vue.framePanCoord.y
+          Vue.$cornerstone.setViewport(Vue.$el, viewport)
+          Vue.$cornerstone.updateImage(Vue.$el)
+        }
+      }
     },
   },
   mounted () {
@@ -60,7 +71,7 @@ export default {
         this.$cornerstone.setViewport(this.$el, viewport)
       }
     },
-    frameZoom: function(frameZoom) {
+    frameZoom: function (frameZoom) {
       if (this.frameData != undefined && frameZoom != undefined) {
         let viewport = this.$cornerstone.getViewport(this.$el)
         viewport.scale = frameZoom

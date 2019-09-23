@@ -9,6 +9,7 @@
     @drop="listen__x__ondrop">
     <img class="icon" src="@/assets/icons/baseline_insert_drive_file_black_24dp.svg" />
     <span>Drop images<i>(*.jpg, *.png)</i> or Click to open dialog</span>
+    <span class="caution">It only works using the client browser. No data is sent or stored anywhere.</span>
   </div>
 </div>
 </template>
@@ -68,25 +69,26 @@ div.drop .icon {
   pointer-events: none;
 }
 div.drop span {
-  font-size: 14px;
+  font-size: 16px;
   color: rgb(0, 0, 0);
   pointer-events: none;
 }
 div.drop span i {
-  font-size: 12px;
+  font-size: 14px;
   color: rgb(80, 80, 80);
 }
-div.drop.mouse-in {
-  background: rgb(50, 50, 50);
-  border: 3px dashed rgb(150, 150, 150);
+div.drop.mouse-in,
+div.drop:hover {
+  background: rgb(180, 180, 180);
 }
-div.drop.mouse-in span {
-  font-size: 14px;
+div.drop.mouse-in span i,
+div.drop:hover span i {
   color: rgb(250, 250, 250);
 }
-div.drop.mouse-in span i {
+div.drop span.caution {
   font-size: 12px;
-  color: rgb(150, 150, 150);
+  color: rgb(200, 0, 0);
+  margin-top: 5px;
 }
 .input-file {
   position: absolute;
@@ -95,4 +97,5 @@ div.drop.mouse-in span i {
   visibility: hidden;
   pointer-events: none;
 }
+
 </style>
