@@ -1,21 +1,39 @@
 <template>
 <div class="body">
   <div class="lamp">
-    <div>
+    <div class="pan-x">
       <span>x:</span>
-      <input type="number" :value="x" @change="listen__x__onchange"/>
+      <input type="number" :value="x" @change="listen__x__onchange" :disabled="setting.phase != 'opened'" />
     </div>
-    <div>
+    <div class="pan-y">
       <span>y:</span>
-      <input type="number" :value="y" @change="listen__y__onchange"/>
+      <input type="number" :value="y" @change="listen__y__onchange" :disabled="setting.phase != 'opened'"/>
+    </div>
+    <div class="scale">
+      <span>scale:</span>
+      <input type="number" min="0.01" :value="scale" @change="listen__scale__onchange" :disabled="setting.phase != 'opened'"/>
     </div>
     <div>
-      <span>scale:</span>
-      <input type="number" min="0.01" :value="scale" @change="listen__scale__onchange"/>
+      <span>diff:</span>
+      <input ref="check-diff" type="checkbox" @change="listen__setting__onchange({diff: {active: $event.target.checked}})" :disabled="setting.phase != 'opened'" :checked="setting.diff.active == true" />
+    </div>
+    <div>
+      <span>ref:</span>
+      <span class="diff-reference-val"
+        :class="{inactive: !setting.diff.active}"
+        :title="setting.diff.reference != undefined ? `${setting.diff.reference.name} / can change refrence image to the other image by double click the other frame` : ''">
+        {{ setting.diff.reference != undefined ? setting.diff.reference.name : '' }}
+      </span>
+    </div>
+    <div>
+      <span>tolerance:</span>
+      <input ref="input-tolerance" type="range" min="1" max="441.67" v-model="tolerance"  :disabled="setting.phase != 'opened' || setting.diff.active == false" />
+      <span class="tolerance-val">{{tolerance}}</span>
     </div>
   </div>
   <a href="https://github.com/whwnsdlr1/image-diff" style="line-height:0"><img class="btn github" src="@/assets/icons/GitHub-Mark-Light-32px.png" title="github"/></a>
   <img class="btn" src="@/assets/icons/outline_home_white_24dp.png" title="home" @click="listen__home__onclick" />
+  <img class="btn" src="@/assets/icons/outline_shuffle_white_24dp.png" title="rearrange frames" @click="listen__rearrange__onclick" />
   <img class="btn" src="@/assets/icons/baseline_assessment_white_24dp.png" title="statistics / not yet supported" />
   <img v-show="setting.fullscreen == false" class="btn" src="@/assets/icons/outline_fullscreen_white_24dp.png" title="maxmize" @click="listen__fullscreen__onclick" />
   <img v-show="setting.fullscreen == true" class="btn" src="@/assets/icons/outline_fullscreen_exit_white_24dp.png" title="minimize" @click="listen__fullscreen__onclick" />
@@ -32,12 +50,14 @@ export default {
     return {
       x: undefined,
       y: undefined,
-      scale: undefined
+      scale: undefined,
+      tolerance: undefined
     }
   },
   methods: {
     listen__home__onclick: function () {
       this.setting.phase = 'wait-input'
+      if (this.$refs['check-diff'].checked == true) this.$refs['check-diff'].checked = false
       this.$emit('vue-move-home', {})
     },
     listen__fullscreen__onclick: function () {
@@ -58,20 +78,26 @@ export default {
         this.setting.fullscreen = true
       }
     },
+    listen__rearrange__onclick: function () {
+      this.$emit('vue-frame-rearrange')
+    },
     listen__setting__onclick: function () {
       const Vue = this
       const styleRowOption = {display: 'flex', flexDirection: 'row', marginBottom: '15px', alignItems: 'center', justifyContent: 'space-between'}
       const styleInput = {borderRadius: '5px', padding: '0px 0px 0px 3px'}
       let dom = MISC.createElement('DIV', {width: '300px'}, {})
+      let rowOption0 = MISC.createElement('DIV', styleRowOption, {parent: dom})
+      MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption0, text: `define image size`})
+      let rowOption0Col1 = MISC.createElement('DIV', {}, {parent: rowOption0})
+      let inputPredefinedImageWidth = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption0Col1, attrs: {type: 'number', min: 1, value: Vue.setting.predefinedImageWidth}})
+      if (Vue.setting.phase != 'wait-input') inputPredefinedImageWidth.disabled = true
+      MISC.createElement('SPAN', {fontSize: '12px', padding: '0px 5px'}, {parent: rowOption0Col1, text: 'x'})
+      let inputPredefinedImageHeight = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption0Col1, attrs: {type: 'number', min: 1, value: Vue.setting.predefinedImageHeight}})
+      if (Vue.setting.phase != 'wait-input') inputPredefinedImageHeight.disabled = true
       let rowOption1 = MISC.createElement('DIV', styleRowOption, {parent: dom})
       MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption1, text: 'always show overlay text'})
-      MISC.createElement('INPUT', {}, {parent: rowOption1, attrs: {type: 'checkbox', checked: true}})
-      let rowOption2 = MISC.createElement('DIV', styleRowOption, {parent: dom})
-      let rowOption2Col1 = MISC.createElement('DIV', {}, {parent:rowOption2})
-      MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption2Col1, text: 'When you rest the mouse pointer over a image,'})
-      MISC.createElement('BR', {}, {parent: rowOption2Col1})
-      MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption2Col1, text: 'the rgb value is displayed'})
-      MISC.createElement('INPUT', {}, {parent: rowOption2, attrs: {type: 'checkbox', checked: true}})
+      let inputAlwaysShowOverlayText= MISC.createElement('INPUT', {}, {parent: rowOption1, attrs: {type: 'checkbox'}})
+      if (Vue.setting.alwaysShowOverlayText == true) inputAlwaysShowOverlayText.checked = true
       let rowOption3 = MISC.createElement('DIV', styleRowOption, {parent: dom})
       MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption3, text: `frame row count`})
       let inputFrameRowCount = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption3, attrs: {type: 'number', min: 1, value: Vue.setting.frameRowCount}})
@@ -82,11 +108,11 @@ export default {
       MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption5, text: `border color`})
       let rowOption5Col2 = MISC.createElement('DIV', {}, {parent: rowOption5})
       MISC.createElement('SPAN', {fontSize: '12px', marginRight: '3px'}, {parent: rowOption5Col2, text: `R:`})
-      MISC.createElement('INPUT', {width: '40px', marginRight: '10px', ...styleInput}, {parent: rowOption5Col2, attrs: {type: 'number', min: 0, max: 255}})
+      let inputBorderColorR = MISC.createElement('INPUT', {width: '40px', marginRight: '10px', ...styleInput}, {parent: rowOption5Col2, attrs: {type: 'number', min: 0, max: 255, value: Vue.setting.borderColor[0]}})
       MISC.createElement('SPAN', {fontSize: '12px', marginRight: '3px'}, {parent: rowOption5Col2, text: `G:`})
-      MISC.createElement('INPUT', {width: '40px', marginRight: '10px', ...styleInput}, {parent: rowOption5Col2, attrs: {type: 'number', min: 0, max: 255}})
+      let inputBorderColorG = MISC.createElement('INPUT', {width: '40px', marginRight: '10px', ...styleInput}, {parent: rowOption5Col2, attrs: {type: 'number', min: 0, max: 255, value: Vue.setting.borderColor[1]}})
       MISC.createElement('SPAN', {fontSize: '12px', marginRight: '3px'}, {parent: rowOption5Col2, text: `B:`})
-      MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption5Col2, attrs: {type: 'number', min: 0, max: 255}})
+      let inputBorderColorB = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption5Col2, attrs: {type: 'number', min: 0, max: 255, value: Vue.setting.borderColor[2]}})
       Vue.$mModal.show('dialog', {
         dom: dom,
         buttons: [
@@ -99,19 +125,41 @@ export default {
             class: ['green'],
             onclick: () => {
               let changed = {}
+              const predefinedImageWidth = inputPredefinedImageWidth.value
+              const predefinedImageHeight = inputPredefinedImageHeight.value
+              if (isNaN(parseInt(predefinedImageWidth)) == false && predefinedImageWidth != Vue.setting.predefinedImageWidth &&
+                isNaN(parseInt(predefinedImageHeight)) == false && predefinedImageHeight != Vue.setting.predefinedImageHeight) {
+                  
+                if (predefinedImageWidth > 0 && predefinedImageHeight > 0) {
+                  changed.predefinedImageWidth = parseInt(predefinedImageWidth)
+                  changed.predefinedImageHeight = parseInt(predefinedImageHeight)
+                }
+              }
+              const alwaysShowOverlayText = inputAlwaysShowOverlayText.checked
+              if (alwaysShowOverlayText != Vue.setting.alwaysShowOverlayText) {
+                changed.alwaysShowOverlayText = alwaysShowOverlayText
+              }
               const frameRowCount = inputFrameRowCount.value
-              if (frameRowCount != Vue.setting.frameRowCount) {
-                if (frameRowCount > 0) changed.frameRowCount = frameRowCount
+              if (isNaN(parseInt(frameRowCount)) == false && frameRowCount != Vue.setting.frameRowCount) {
+                if (frameRowCount > 0) changed.frameRowCount = parseInt(frameRowCount)
               }
               const borderWidth = inputBorderWidth.value
-              if (borderWidth != Vue.setting.borderWidth) {
-                if (borderWidth >= 0 && borderWidth < 20) changed.borderWidth = borderWidth
+              if (isNaN(parseInt(borderWidth)) == false && borderWidth != Vue.setting.borderWidth) {
+                if (borderWidth >= 0 && borderWidth < 40) changed.borderWidth = parseInt(borderWidth)
+              }
+              const borderColor = [inputBorderColorR.value, inputBorderColorG.value, inputBorderColorB.value]
+              if (borderColor.map((v, i) => v == Vue.setting.borderWidth[i]).reduce((acc, v) => acc && v, true) == false) {
+                if (borderColor.map(v => isNaN(parseInt(v)) == false && v >= 0 && v <= 255).reduce((acc, v) => acc && v, true)) changed.borderColor = borderColor
               }
               Vue.$emit('vue-setting-onchanged', changed)
             }
           }
         ]
       })
+    },
+    listen__setting__onchange: function (changed) {
+      const Vue = this
+      Vue.$emit('vue-setting-onchanged', changed)
     },
     listen__x__onchange: function (e) {
       const val = parseFloat(e.currentTarget.value)
@@ -147,7 +195,18 @@ export default {
     frameZoom: function (frameZoom) {
       if (frameZoom != undefined) this.scale = parseFloat(frameZoom.toFixed(2))
       else this.scale = undefined
+    },
+    'setting.diff.tolerance': function (tolerance) {
+      this.tolerance = tolerance
     }
+  },
+  mounted () {
+    const Vue = this
+    Vue.tolerance = Vue.setting.diff.tolerance
+    
+    Vue.$refs['input-tolerance'].onchange = Vue._.debounce(function () {
+      Vue.$emit('vue-setting-onchanged', {diff: {tolerance: Vue.tolerance}})
+    }, 100)
   }
 }
 </script>
@@ -163,25 +222,101 @@ div.body {
   padding: 0px 20px;
   border-bottom: 1px solid rgb(80, 80, 80);
 }
+div.body * {
+  -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+      -moz-user-select: none; /* Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome and Opera */
+}
 div.lamp {
   display: flex;
   flex-direction: row;
   flex: 1 0 0;
   justify-content: center;
+  overflow:hidden;
 }
 div.lamp > div:not(:last-child) {
   margin-right: 20px;
 }
-div.lamp span {
+div.lamp span:first-child {
   font-size: 14px;
   font-weight: bold;
   color: rgb(230, 230, 230);
   margin-right: 5px;
 }
+div.lamp span.diff-reference-val {
+  display: inline-block;
+  max-width: 90px;
+  font-size: 12px;
+  color: rgb(230, 230, 230);
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+div.lamp span.diff-reference-val.inactive {
+  color: rgb(130, 130, 130);
+}
+div.lamp span.tolerance-val {
+  display: inline-block;
+  width: 25px;
+  font-size: 12px;
+  color: rgb(230, 230, 230);
+  margin-left: 5px;
+}
 div.lamp input {
   width: 60px;
   border-radius: 5px;
   padding: 0px 0px 0px 3px;
+}
+div.lamp input[type=checkbox] {
+  position: relative;
+  top: 2px;
+  width: 15px;
+  padding: 0px 0px 0px 0px;
+  margin: 0px 0px 0px 0px;
+}
+div.lamp input[type=range] {
+  position: relative;
+  bottom: 1px;
+  width: 100px;
+  height: 6px;
+  padding: 0px 0px 0px 0px;
+  margin: 0px 0px 0px 0px;
+  -webkit-appearance: none;
+  border-radius: 3px;
+  border: 1px solid rgb(180, 180, 180);
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+  box-sizing: border-box;
+}
+div.lamp input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 8px;
+  height: 15px;
+  background: rgb(0, 123, 255);
+  border: 1px solid rgb(255, 255, 255);
+  cursor: pointer;
+}
+div.lamp input[type=range][disabled]::-webkit-slider-thumb {
+  background: rgb(80, 80, 80);
+  cursor: default;
+}
+div.lamp input[type=range]::-moz-range-thumb {
+  width: 8px;
+  height: 15px;
+  background: rgb(0, 123, 255);
+  border: 1px solid rgb(255, 255, 255);
+  cursor: pointer;
+}
+div.lamp input[type=range][disabled]::-moz-range-thumb {
+  background: rgb(80, 80, 80);
+  cursor: default;
 }
 img.btn {
   cursor: pointer;
@@ -197,5 +332,18 @@ img.btn.github {
 img.btn:hover {
   background: rgb(80, 80, 80);
   border: 1px solid rgb(150, 150, 150);
+}
+@media only screen and (max-width: 950px) {
+div.lamp .pan-x,
+div.lamp .pan-y,
+div.lamp .scale {
+  display: none;
+}
+}
+@media only screen and (max-width: 650px) {
+.body > a,
+.body > img {
+  display: none;
+}
 }
 </style>

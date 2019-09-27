@@ -2,7 +2,8 @@
 <div class="m-modal">
   <div class="content">
     <div class="row0"></div>
-    <div class="row1"></div>
+    <div class="row1">
+    </div>
     <div class="row2">
       <button v-for="(button, index) in dButtons" :key="`btn-${index}`" :class="button.class" @click="listen__x__onclick(button.onclick)">{{ button.title }}</button>
     </div>
@@ -20,14 +21,24 @@ export default {
     },
     set: function (div) {
       this.$el.querySelector('.row1').appendChild(div)
+    },
+    doubleRaf: function (callback) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(callback)
+      })
     }
   },
   mounted () {
-    console.log('modal mounted.')
+    // console.log('modal mounted.')
     this.$el.querySelector('.row1').appendChild(this.dDom)
+    this.doubleRaf(() => {
+      if (this.onafterdomattached != undefined) {
+        this.onafterdomattached(this.dDom)
+      }
+    })
   },
   destroyed () {
-    console.log('modal destroyed.')
+    // console.log('modal destroyed.')
     document.body.removeChild(this.$el)
   }
 }
@@ -53,11 +64,16 @@ export default {
   max-height: 80%;
   box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
 }
+.content * {
+  box-sizing: border-box;
+}
 .content .row0 {
   position: relative;
   height: 15px;
-  border: 1px solid rgba(20, 20, 20, 0.3);
-  background: rgb(190, 190, 230);
+  /* border: 1px solid rgba(20, 20, 20, 0.3); */
+  /* background: rgb(190, 190, 230); */
+  border-bottom: 1px solid rgb(80, 80, 80);
+  background: rgb(36, 41, 46);
 }
 .content .row1 {
   position: relative;

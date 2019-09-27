@@ -15,10 +15,10 @@ export default {
 
 <style>
 #app {
-  font-family: Helvetica, Arial, sans-serif;
   height: 100%;
   width: 100%;
-  font-family: 'Roboto';
+  /* font-family: 'Roboto'; */
+  font-family: 'Manjari', sans-serif;
 }
 div {
   position: relative;
@@ -44,5 +44,11 @@ div {
   border: 3px solid #999;
   border-top-color: #000;
   animation: spinner .6s linear infinite;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>
