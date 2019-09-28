@@ -1,5 +1,5 @@
 # image-diff
-![Alt Text](https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif)
+![Alt Text](example.gif)
 
 client web application to compare multiple images.
 <br />
@@ -10,7 +10,7 @@ currently support 8bit jpg, png format
 this project was built with the Vue framework and many other libraries.
 
 ## Demo
-you can demo in [https://whwnsdlr1.github.io/image-diff](https://whwnsdlr1.github.io/image-diff/).
+you can online demo in [https://whwnsdlr1.github.io/image-diff](https://whwnsdlr1.github.io/image-diff/).
 <br />
 or
 <br />
@@ -21,6 +21,30 @@ yarn install
 yarn run serve
 ```
 and access to http://localhost:port
+
+## Usage
+1. load images by drag & drop or dialog that you can open by panel click.
+2. (optional) if the images are different sizes, the other images will be resized to the first image size.
+you can set order of images using file name(index key and value, seperated by two underscore).
+ex) barbara__index__0.jpg, cameraman__index__1.jpg, salesman__index__3.png...
+3. diff !
+
+- x: coordinate x.
+- y: coordinate y.
+- scale: scale, scale is applied before coordinate.(panning)
+- diff: turn on / off diff mode.
+- ref: reference image to diff. you can change ref by frame click in diff mode.
+- tolerance: if difference(Mean Square Error) is greater than or equal tolerance, pixel is set difference. opposite, set same less than tolerance. ![equation](http://latex.codecogs.com/png.latex?%5Csum_%7BP%7D%5E%7Bp%7D%28%5Csqrt%7B%28R_%7Bp1%7D-R_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28G_%7Bp1%7D-G_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28B_%7Bp1%7D-B_%7Bp2%7D%29%5E%7B2%7D%7D%29)
+- home: move to image load page.
+- rearrange: rearrange frames. drag and drop.
+- setting
+```
+- define image size: image size to be resized. only set in load frame.
+- always show overlay text: show / hidden file name and description.
+- frame row count: frames row count.
+- border width: border width. limit to [0, 40)
+- border color: border color.
+```
 
 ## Browser support - (tested)
 - Google Chrome 77+

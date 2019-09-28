@@ -134,6 +134,12 @@ export default {
     },
     'frameData.diff.updated': function (updated) {
       this.listen__layer_image__onchange(updated)
+    },
+    'frameData.id': function () {
+      if (this.layerId != undefined) {
+        this.$cornerstone.setLayerImage(this.$el, this.frameData.cornerstoneImage, this.layerId)
+        this.$cornerstone.updateImage(this.$el)
+      }
     }
   },
   async mounted () {

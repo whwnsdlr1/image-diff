@@ -254,6 +254,7 @@ div.lamp span.diff-reference-val {
   overflow-x: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
+  white-space: nowrap;
 }
 div.lamp span.diff-reference-val.inactive {
   color: rgb(130, 130, 130);

@@ -313,8 +313,8 @@ export default {
             return el != undefined ? {id: el.id, name: el.name} : undefined
           }).filter((el) => el != undefined)
         })
-        // const domComponent = new ComponentClass({el: MISC.createElement('DIV', {}, {}), data: function () { return {'dataArray2D': array2D} }}).$el
-        const domComponent = new ComponentClass({el: MISC.createElement('DIV', {}, {}), propsData: {'dataArray2D': array2D}}).$el
+        const instance = new ComponentClass({el: MISC.createElement('DIV', {}, {}), propsData: {'dataArray2D': array2D}})
+        const domComponent = instance.$el
         dom.appendChild(domComponent)
         Vue.$mModal.show('dialog', {
           dom: dom,
@@ -331,8 +331,7 @@ export default {
               title: 'confirm',
               class: ['green'],
               onclick: () => {
-                let changed = {}
-                Vue.$emit('vue-setting-onchanged', changed)
+                Vue.listen__title_setting__onchanged({rearrange: instance.paddedArray})
               }
             }
           ]
@@ -354,6 +353,19 @@ export default {
       Vue.layer.message = 'change setting.'
       Vue.layer.active = true
       Vue.doubleRaf(async () => {
+        if (changed.rearrange != undefined) {
+          const frames1 = changed.rearrange
+          const changedFrameCnt = frames1.reduce((acc, val) => acc + Number(val.index != val.index0), 0)
+          if (changedFrameCnt > 0) {
+            let frames = []
+            for (let i = 0; i < frames1.length; i++) {
+              const id = frames1[i].id
+              const idx = Vue.frames.findIndex((el) => el.id == id)
+              if (idx >= 0) frames.push(Vue.frames[idx])
+            }
+            Vue.frames = frames
+          }
+        }
         if (changed.diff != undefined) {
           if (Vue.frames.length <= 1) {
             Vue.$toasted.show(`To diff, need more than one image`, {type: 'error', duration: 1500, position: 'bottom-center'})
