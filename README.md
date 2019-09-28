@@ -33,8 +33,8 @@ ex) barbara__index__0.jpg, cameraman__index__1.jpg, salesman__index__3.png...
 - y: coordinate y.
 - scale: scale, scale is applied before coordinate.(panning)
 - diff: turn on / off diff mode.
-- ref: reference image to diff. you can change ref by frame click in diff mode.
-- tolerance: if difference(Mean Square Error) is greater than or equal tolerance, pixel is set difference. opposite, set same less than tolerance. ![equation](http://latex.codecogs.com/png.latex?%5Csum_%7BP%7D%5E%7Bp%7D%28%5Csqrt%7B%28R_%7Bp1%7D-R_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28G_%7Bp1%7D-G_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28B_%7Bp1%7D-B_%7Bp2%7D%29%5E%7B2%7D%7D%29)
+- ref: reference image to diff. you can change ref by frame double click in diff mode.
+- tolerance: if difference value(Mean Square Error) is greater than or equal tolerance, pixel is set difference. opposite, set same less than tolerance. ![equation](http://latex.codecogs.com/png.latex?%5Csum_%7BP%7D%5E%7Bp%7D%28%5Csqrt%7B%28R_%7Bp1%7D-R_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28G_%7Bp1%7D-G_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28B_%7Bp1%7D-B_%7Bp2%7D%29%5E%7B2%7D%7D%29)
 - home: move to image load page.
 - rearrange: rearrange frames. drag and drop.
 - setting
