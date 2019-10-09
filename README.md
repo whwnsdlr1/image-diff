@@ -79,6 +79,9 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 - eslint-plugin-vue
 - sitemap-webpack-plugin
 - vue-template-compiler
+<<<<<<< HEAD
 
 ## TO-DO
 - support other image format(bmp, tiff)
+=======
+>>>>>>> ce5995f2fc362d1ea160854bfe3aae517f65e883
