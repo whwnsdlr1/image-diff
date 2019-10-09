@@ -3,6 +3,7 @@
   <title-bar :setting="setting"
     :frame-pan-coord="framePanCoord"
     :frame-zoom="frameZoom"
+    :frameRowCount="frame2D != undefined ? frame2D.length : undefined"
     @vue-move-home="listen__x__tohome"
     @vue-frame-rearrange="listen__x__onrearrangeframe"
     @vue-pan-x="listen__title__panx"
@@ -81,7 +82,7 @@ export default {
       setting: {
         phase: 'wait-input',
         fullscreen: false,
-        alwaysShowOverlayText: true,
+        showOverlayText: true,
         frameRowCount: undefined,
         borderWidth: 1,
         borderColor: [255, 0, 0],
@@ -494,8 +495,8 @@ export default {
           Vue.setting.predefinedImageWidth = changed.predefinedImageWidth
           Vue.setting.predefinedImageHeight = changed.predefinedImageHeight
         }
-        if (changed.alwaysShowOverlayText != undefined) {
-          Vue.setting.alwaysShowOverlayText = changed.alwaysShowOverlayText
+        if (changed.showOverlayText != undefined) {
+          Vue.setting.showOverlayText = changed.showOverlayText
         }
         if (changed.borderWidth != undefined) {
           Vue.setting.borderWidth = changed.borderWidth

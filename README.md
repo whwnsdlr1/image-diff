@@ -28,19 +28,24 @@ and access to http://localhost:port
 you can set order of images using file name(index key and value, seperated by two underscore).
 ex) barbara__index__0.jpg, cameraman__index__1.jpg, salesman__index__3.png...
 3. diff !
+```
+mouse & touch drag - panning
+mouse wheel & pinch to zoom - zoom in / out
+mouse doubleclick - select reference image
+```
 
 - x: coordinate x.
 - y: coordinate y.
 - scale: scale, scale is applied before coordinate.(panning)
 - diff: turn on / off diff mode.
 - ref: reference image to diff. you can change ref by frame click in diff mode.
-- tolerance: if difference(Mean Square Error) is greater than or equal tolerance, pixel is set difference. opposite, set same less than tolerance. ![equation](http://latex.codecogs.com/png.latex?%5Csum_%7BP%7D%5E%7Bp%7D%28%5Csqrt%7B%28R_%7Bp1%7D-R_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28G_%7Bp1%7D-G_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28B_%7Bp1%7D-B_%7Bp2%7D%29%5E%7B2%7D%7D%29)
+- tolerance: if difference value(Mean Square Error) is greater than or equal tolerance, pixel is set difference-tag. opposite, set same-tag less than tolerance. ![equation](http://latex.codecogs.com/png.latex?%5Csum_%7BP%7D%5E%7Bp%7D%28%5Csqrt%7B%28R_%7Bp1%7D-R_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28G_%7Bp1%7D-G_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28B_%7Bp1%7D-B_%7Bp2%7D%29%5E%7B2%7D%7D%29)
 - home: move to image load page.
 - rearrange: rearrange frames. drag and drop.
 - setting
 ```
-- define image size: image size to be resized. only set in load frame.
-- always show overlay text: show / hidden file name and description.
+- define image size: image size to be resized. only can set before load images.
+- show overlay text: show / hidden file name and description.
 - frame row count: frames row count.
 - border width: border width. limit to [0, 40)
 - border color: border color.
@@ -74,3 +79,6 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 - eslint-plugin-vue
 - sitemap-webpack-plugin
 - vue-template-compiler
+
+## TO-DO
+- support other image format(bmp, tiff)

@@ -3,7 +3,7 @@
     :class="{ 'no-frame-data': frameData == undefined }"
     @mouseenter="() => { if (frameData != undefined) { $emit('vue-mouseenter', {}) }}"
     @mouseleave="() => { if (frameData != undefined) { $emit('vue-mouseleave', {}) }}">
-    <div v-if="frameData != undefined && (setting.alwaysShowOverlayText == true || frameMouseOn == true)" class="overlay">
+    <div v-if="frameData != undefined && setting.showOverlayText == true" class="overlay">
       <span class="name" :class="{ reference: setting.diff.active == true && setting.diff.reference != undefined && (setting.diff.reference.id == frameData.id) }">{{ frameData.name }}</span>
       <div v-for="(value, key, index) in frameData.params" :key="`params-${index}`"
         class="params"

@@ -25,7 +25,7 @@
         {{ setting.diff.reference != undefined ? setting.diff.reference.name : '' }}
       </span>
     </div>
-    <div>
+    <div class="tolerance">
       <span>tolerance:</span>
       <input ref="input-tolerance" type="range" min="1" max="441.67" v-model="tolerance"  :disabled="setting.phase != 'opened' || setting.diff.active == false" />
       <span class="tolerance-val">{{tolerance}}</span>
@@ -45,7 +45,7 @@
 /* eslint-disable no-console */
 import MISC from '@/js/miscellaneous.js'
 export default {
-  props: ['setting', 'frame-zoom', 'frame-pan-coord'],
+  props: ['setting', 'frame-zoom', 'frame-pan-coord', 'frame-row-count'],
   data: function () {
     return {
       x: undefined,
@@ -89,18 +89,26 @@ export default {
       let rowOption0 = MISC.createElement('DIV', styleRowOption, {parent: dom})
       MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption0, text: `define image size`})
       let rowOption0Col1 = MISC.createElement('DIV', {}, {parent: rowOption0})
-      let inputPredefinedImageWidth = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption0Col1, attrs: {type: 'number', min: 1, value: Vue.setting.predefinedImageWidth}})
-      if (Vue.setting.phase != 'wait-input') inputPredefinedImageWidth.disabled = true
-      MISC.createElement('SPAN', {fontSize: '12px', padding: '0px 5px'}, {parent: rowOption0Col1, text: 'x'})
-      let inputPredefinedImageHeight = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption0Col1, attrs: {type: 'number', min: 1, value: Vue.setting.predefinedImageHeight}})
-      if (Vue.setting.phase != 'wait-input') inputPredefinedImageHeight.disabled = true
+      let inputPredefinedImageWidth, inputPredefinedImageHeight
+      if (Vue.setting.phase == 'wait-input' || (Vue.setting.predefinedImageWidth != undefined && Vue.setting.predefinedImageHeight != undefined)) {
+        inputPredefinedImageWidth = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption0Col1, attrs: {type: 'number', min: 1, value: Vue.setting.predefinedImageWidth}})
+        if (Vue.setting.phase != 'wait-input') inputPredefinedImageWidth.disabled = true
+        MISC.createElement('SPAN', {fontSize: '12px', padding: '0px 5px'}, {parent: rowOption0Col1, text: 'x'})
+        inputPredefinedImageHeight = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption0Col1, attrs: {type: 'number', min: 1, value: Vue.setting.predefinedImageHeight}})
+        if (Vue.setting.phase != 'wait-input') inputPredefinedImageHeight.disabled = true
+      } else {
+        MISC.createElement('SPAN', {fontSize: '12px', color: 'red'}, {parent: rowOption0Col1, text: 'undefined'})
+      }
       let rowOption1 = MISC.createElement('DIV', styleRowOption, {parent: dom})
-      MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption1, text: 'always show overlay text'})
-      let inputAlwaysShowOverlayText= MISC.createElement('INPUT', {}, {parent: rowOption1, attrs: {type: 'checkbox'}})
-      if (Vue.setting.alwaysShowOverlayText == true) inputAlwaysShowOverlayText.checked = true
+      MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption1, text: 'show overlay text'})
+      let inputShowOverlayText= MISC.createElement('INPUT', {}, {parent: rowOption1, attrs: {type: 'checkbox'}})
+      if (Vue.setting.showOverlayText == true) inputShowOverlayText.checked = true
       let rowOption3 = MISC.createElement('DIV', styleRowOption, {parent: dom})
       MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption3, text: `frame row count`})
-      let inputFrameRowCount = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption3, attrs: {type: 'number', min: 1, value: Vue.setting.frameRowCount}})
+      let frameRowCount
+      if (Vue.setting.frameRowCount != undefined) frameRowCount = Vue.setting.frameRowCount
+      else if (Vue.frameRowCount != undefined) frameRowCount = Vue.frameRowCount
+      let inputFrameRowCount = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption3, attrs: {type: 'number', min: 1, value: frameRowCount}})
       let rowOption4 = MISC.createElement('DIV', styleRowOption, {parent: dom})
       MISC.createElement('SPAN', {fontSize: '12px'}, {parent: rowOption4, text: `border width`})
       let inputBorderWidth = MISC.createElement('INPUT', {width: '40px', ...styleInput}, {parent: rowOption4, attrs: {type: 'number', min: 0, max: 10, value: Vue.setting.borderWidth}})
@@ -125,19 +133,21 @@ export default {
             class: ['green'],
             onclick: () => {
               let changed = {}
-              const predefinedImageWidth = inputPredefinedImageWidth.value
-              const predefinedImageHeight = inputPredefinedImageHeight.value
-              if (isNaN(parseInt(predefinedImageWidth)) == false && predefinedImageWidth != Vue.setting.predefinedImageWidth &&
-                isNaN(parseInt(predefinedImageHeight)) == false && predefinedImageHeight != Vue.setting.predefinedImageHeight) {
-                  
-                if (predefinedImageWidth > 0 && predefinedImageHeight > 0) {
-                  changed.predefinedImageWidth = parseInt(predefinedImageWidth)
-                  changed.predefinedImageHeight = parseInt(predefinedImageHeight)
+              if (inputPredefinedImageWidth != undefined) {
+                const predefinedImageWidth = inputPredefinedImageWidth.value
+                const predefinedImageHeight = inputPredefinedImageHeight.value
+                if (isNaN(parseInt(predefinedImageWidth)) == false && predefinedImageWidth != Vue.setting.predefinedImageWidth &&
+                  isNaN(parseInt(predefinedImageHeight)) == false && predefinedImageHeight != Vue.setting.predefinedImageHeight) {
+                    
+                  if (predefinedImageWidth > 0 && predefinedImageHeight > 0) {
+                    changed.predefinedImageWidth = parseInt(predefinedImageWidth)
+                    changed.predefinedImageHeight = parseInt(predefinedImageHeight)
+                  }
                 }
               }
-              const alwaysShowOverlayText = inputAlwaysShowOverlayText.checked
-              if (alwaysShowOverlayText != Vue.setting.alwaysShowOverlayText) {
-                changed.alwaysShowOverlayText = alwaysShowOverlayText
+              const showOverlayText = inputShowOverlayText.checked
+              if (showOverlayText != Vue.setting.showOverlayText) {
+                changed.showOverlayText = showOverlayText
               }
               const frameRowCount = inputFrameRowCount.value
               if (isNaN(parseInt(frameRowCount)) == false && frameRowCount != Vue.setting.frameRowCount) {
@@ -181,6 +191,11 @@ export default {
         this.scale = val
         this.$emit('vue-zoom', val)
       }
+    },
+    doubleRaf: function (callback) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(callback)
+      })
     }
   },
   watch: {
@@ -334,7 +349,7 @@ img.btn:hover {
   background: rgb(80, 80, 80);
   border: 1px solid rgb(150, 150, 150);
 }
-@media only screen and (max-width: 950px) {
+@media only screen and (max-width: 970px) {
 div.lamp .pan-x,
 div.lamp .pan-y,
 div.lamp .scale {
@@ -344,6 +359,11 @@ div.lamp .scale {
 @media only screen and (max-width: 650px) {
 .body > a,
 .body > img {
+  display: none;
+}
+}
+@media only screen and (max-width: 450px) {
+div.lamp .tolerance {
   display: none;
 }
 }
