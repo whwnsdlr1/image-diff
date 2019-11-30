@@ -82,6 +82,7 @@ export default {
   border-left: 1px solid rgba(20, 20, 20, 0.3);
   border-right: 1px solid rgba(20, 20, 20, 0.3);
   background: rgba(230, 230, 230, 1);
+  overflow: auto;
 }
 .content .row2 {
   position: relative;

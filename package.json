@@ -1,6 +1,6 @@
 {
   "name": "image-diff",
-  "version": "0.1.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,11 +9,9 @@
   },
   "dependencies": {
     "core-js": "^2.6.5",
-    "cornerstone-core": "^2.3.0",
     "element-resize-event": "^3.0.3",
-    "jpeg-js": "^0.3.6",
-    "pngjs": "^3.4.0",
     "vue": "^2.6.10",
+    "vue-image-diff": "^1.0.3",
     "vue-lodash": "^2.0.2",
     "vue-router": "^3.1.3",
     "vue-toasted": "^1.1.27"
@@ -25,7 +23,6 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
-    "sitemap-webpack-plugin": "^0.6.0",
     "vue-template-compiler": "^2.6.10"
   },
   "eslintConfig": {

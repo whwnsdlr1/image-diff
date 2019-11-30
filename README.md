@@ -1,13 +1,13 @@
 # image-diff
 ![Alt Text](example.gif)
-
+<br />
 client web application to compare multiple images.
 <br />
 you can pan, zoom and diff multiple images at the same time.
 <br />
 currently support 8bit jpg, png format
 <br />
-this project was built with the Vue framework and many other libraries.
+this project was built with the Vue framework, [vue-image-diff component](https://github.com/whwnsdlr1/vue-image-diff) and many other libraries.
 
 ## Demo
 you can online demo in [https://whwnsdlr1.github.io/image-diff](https://whwnsdlr1.github.io/image-diff/).
@@ -17,6 +17,7 @@ or
 install project as below
 ```
 git clone https://github.com/whwnsdlr1/image-diff
+cd image-diff
 yarn install
 yarn run serve
 ```
@@ -29,26 +30,11 @@ you can set order of images using file name(index key and value, seperated by tw
 ex) barbara__index__0.jpg, cameraman__index__1.jpg, salesman__index__3.png...
 3. diff !
 ```
-mouse & touch drag - panning
-mouse wheel & pinch to zoom - zoom in / out
-mouse doubleclick - select reference image
-```
-
-- x: coordinate x.
-- y: coordinate y.
-- scale: scale, scale is applied before coordinate.(panning)
-- diff: turn on / off diff mode.
-- ref: reference image to diff. you can change ref by frame click in diff mode.
-- tolerance: if difference value(Mean Square Error) is greater than or equal tolerance, pixel is set difference-tag. opposite, set same-tag less than tolerance. ![equation](http://latex.codecogs.com/png.latex?%5Csum_%7BP%7D%5E%7Bp%7D%28%5Csqrt%7B%28R_%7Bp1%7D-R_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28G_%7Bp1%7D-G_%7Bp2%7D%29%5E%7B2%7D%20&plus;%20%28B_%7Bp1%7D-B_%7Bp2%7D%29%5E%7B2%7D%7D%29)
-- home: move to image load page.
-- rearrange: rearrange frames. drag and drop.
-- setting
-```
-- define image size: image size to be resized. only can set before load images.
-- show overlay text: show / hidden file name and description.
-- frame row count: frames row count.
-- border width: border width. limit to [0, 40)
-- border color: border color.
+- mouse & touch drag - panning
+- mouse wheel & pinch to zoom - zoom in / out
+- mouse doubleclick - change reference image for diff
+- right mouse drag - adjust brightness and contrast
+- control panel parameter - see [vue-image-diff](https://github.com/whwnsdlr1/vue-image-diff) readme
 ```
 
 ## Browser support - (tested)
@@ -63,9 +49,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 ## Third-party libraries
 ### Dependencies
 - vue: [https://github.com/vuejs/vue](https://github.com/vuejs/vue)
-- cornerstone-core: [https://github.com/cornerstonejs/cornerstone](https://github.com/cornerstonejs/cornerstone)
-- jpeg-js: [https://github.com/eugeneware/jpeg-js](https://github.com/eugeneware/jpeg-js)
-- pngjs: [https://github.com/arian/pngjs](https://github.com/arian/pngjs)
+- vue-image-diff: [https://github.com/whwnsdlr1/vue-image-diff](https://github.com/whwnsdlr1/vue-image-diff)
 - element-resize-event: [https://github.com/KyleAMathews/element-resize-event](https://github.com/KyleAMathews/element-resize-event)
 - vue-lodash: [https://github.com/Ewocker/vue-lodash](https://github.com/Ewocker/vue-lodash)
 - vue-toasted: [https://github.com/shakee93/vue-toasted](https://github.com/shakee93/vue-toasted)
@@ -77,11 +61,4 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 - babel-eslint
 - eslint
 - eslint-plugin-vue
-- sitemap-webpack-plugin
 - vue-template-compiler
-<<<<<<< HEAD
-
-## TO-DO
-- support other image format(bmp, tiff)
-=======
->>>>>>> ce5995f2fc362d1ea160854bfe3aae517f65e883

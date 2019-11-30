@@ -7027,11 +7027,6 @@ simple-swizzle@^0.2.2:
   dependencies:
     is-arrayish "^0.3.1"
 
-sitemap-webpack-plugin@^0.6.0:
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/sitemap-webpack-plugin/-/sitemap-webpack-plugin-0.6.0.tgz#4083fb0906313e7810b93a1fe954fef6448919b3"
-  integrity sha512-kLYyDygC/6gZ5xlShGEytionLMayD9IFxKwfqMNkgXkbPsBes5D6TqkqYxlZHg99HIF10TF1zPcmI//0qFxbbQ==
-
 slash@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/slash/-/slash-1.0.0.tgz#c41f2f6c39fc16d1cd17ad4b5d896114ae470d55"
@@ -7965,6 +7960,19 @@ vue-hot-reload-api@^2.3.0:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.3.tgz#2756f46cb3258054c5f4723de8ae7e87302a1ccf"
   integrity sha512-KmvZVtmM26BQOMK1rwUZsrqxEGeKiYSZGA7SNWE6uExx8UX/cj9hq2MRV/wWC3Cq6AoeDGk57rL9YMFRel/q+g==
+
+vue-image-diff@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/vue-image-diff/-/vue-image-diff-1.0.3.tgz#40c6d26523696bf34359161cecc2f4fa39152bea"
+  integrity sha512-/jYxjNN6x/BCwH+HGtd8PKDuZf0ZuFER3zNn3PZ/LRLQNV92FsPg7a87iCBYnwGpCeKQ6mopj9YpyA+wpo66mg==
+  dependencies:
+    core-js "^2.6.5"
+    cornerstone-core "^2.3.0"
+    element-resize-event "^3.0.3"
+    jpeg-js "^0.3.6"
+    pngjs "^3.4.0"
+    vue "^2.6.10"
+    vue-lodash "^2.0.2"
 
 vue-loader@^15.7.0:
   version "15.7.1"
